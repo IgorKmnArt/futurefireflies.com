@@ -1,12 +1,1185 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FutureFireflies</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FutureFireflies — Hover Racing Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Barlow+Condensed:ital,wght@0,200;0,300;0,400;1,200&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #111111;
+    --dark: #f4f4f2;
+    --panel: #ffffff;
+    --border: #dcdcd8;
+    --accent: #c8102e;
+    --accent2: #8a0a1e;
+    --muted: #888884;
+    --text: #333330;
+    --white: #ffffff;
+    --font-display: 'Rajdhani', sans-serif;
+    --font-body: 'Barlow Condensed', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--white);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(248,248,246,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.2em;
+    color: var(--black);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 60px 80px;
+    position: relative;
+    overflow: hidden;
+    background: #f0f0ee;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  }
+
+  .hero-scanlines {
+    display: none;
+  }
+
+  /* Animated speed lines */
+  .hero-lines {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .hero-lines::before {
+    content: '';
+    position: absolute;
+    top: 38%;
+    left: -100%;
+    width: 200%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: speedline 5s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  .hero-lines::after {
+    content: '';
+    position: absolute;
+    top: 52%;
+    left: -100%;
+    width: 200%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,16,46,0.3), transparent);
+    animation: speedline 5s ease-in-out infinite 2s;
+    opacity: 0.4;
+  }
+
+  @keyframes speedline {
+    0% { transform: translateX(-20%); opacity: 0; }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.6; }
+    100% { transform: translateX(20%); opacity: 0; }
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(60px, 10vw, 140px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero-title .line2 {
+    display: block;
+    color: #aaa;
+    font-weight: 300;
+  }
+
+  .hero-sub {
+    max-width: 500px;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: #777;
+    line-height: 1.7;
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .btn {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 32px;
+    border: 1px solid;
+    transition: all 0.25s;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #ffffff;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: #bbb;
+    color: #777;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hero-corner {
+    position: absolute;
+    top: 100px;
+    right: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeIn 1s 1s forwards;
+  }
+
+  .hero-corner-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+
+  .hero-corner-value {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--text);
+  }
+
+  .corner-divider {
+    width: 40px;
+    height: 1px;
+    background: #ddd;
+    margin: 8px 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* SECTIONS */
+  section { padding: 120px 60px; }
+
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 30px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(36px, 5vw, 64px);
+    color: var(--black);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 60px;
+  }
+
+  /* ABOUT COMPANY */
+  .about-company {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .about-company-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .about-body {
+    font-size: 17px;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .about-body p { margin-bottom: 20px; }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .stat-box {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-box::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .stat-box:hover::after { transform: scaleX(1); }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-num span { color: var(--accent); }
+
+  .stat-label {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* GAME SECTION */
+  .game-section {
+    background: var(--dark);
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+  }
+
+  .game-bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 280px;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(200,16,46,0.06);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.1em;
+    user-select: none;
+  }
+
+  .game-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .game-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2px;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.06);
+  }
+
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .game-card-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .game-title-block { margin-bottom: 30px; }
+
+  .game-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .game-name {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 700;
+    color: var(--black);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .game-tagline {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 200;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .game-desc {
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--text);
+    margin: 30px 0;
+  }
+
+  .game-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .game-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .spec-row {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .spec-key {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .spec-val {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  /* ABOUT ME */
+  .about-me {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+  }
+
+  .about-me-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .about-photo-wrap {
+    position: relative;
+  }
+
+  .about-photo-frame {
+    position: relative;
+    overflow: hidden;
+
+    aspect-ratio: 3/4;
+  }
+
+  .about-photo-frame img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    filter: grayscale(15%) contrast(1.05);
+  }
+
+  .about-photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(255,255,255,0.5));
+  }
+
+  .photo-border {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: -12px;
+    bottom: -12px;
+    border: 1px solid var(--accent);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .about-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 4vw, 52px);
+    color: var(--black);
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .about-role {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 40px;
+  }
+
+  .about-bio {
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--text);
+    margin-bottom: 40px;
+  }
+
+  .about-bio p { margin-bottom: 18px; }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 40px;
+  }
+
+  .skill-item {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .skill-item:hover { border-color: var(--accent); }
+
+  .skill-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--black);
+    margin-bottom: 4px;
+  }
+
+  .skill-tools {
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  /* CONTACT */
+  .contact-section {
+    background: #f0f0ee;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 120px 60px;
+  }
+
+  .contact-section .section-label { justify-content: center; color: var(--accent); }
+  .contact-section .section-label::before { background: var(--accent); }
+
+  .contact-section .section-title { color: var(--black); margin-bottom: 10px; }
+
+  .contact-email {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 4vw, 48px);
+    font-weight: 700;
+    color: var(--black);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 4px;
+    transition: color 0.2s;
+    display: inline-block;
+    margin: 30px 0 60px;
+  }
+
+  .contact-email:hover { color: var(--accent); }
+
+  .contact-section .btn-ghost {
+    border-color: #bbb;
+    color: #777;
+  }
+
+  .contact-section .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* FOOTER */
+  footer {
+    background: #e8e8e6;
+    border-top: 1px solid #d0d0cc;
+    padding: 40px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.2em;
+    color: #999;
+  }
+
+  .footer-logo span { color: var(--accent); }
+
+  .footer-copy {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: #aaa;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .footer-links a {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #aaa;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--accent); }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ACCENT CORNER BRACKETS */
+  .bracket-wrap {
+    position: relative;
+    padding: 30px;
+  }
+
+  .bracket-wrap::before, .bracket-wrap::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.4;
+  }
+
+  .bracket-wrap::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+  .bracket-wrap::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+
+  .screen-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.screen-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.screens-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  nav {
+    padding: 18px 24px;
+  }
+
+  .nav-links {
+    gap: 18px;
+  }
+
+  .hero,
+  section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .hero-corner {
+    display: none;
+  }
+
+  .about-company-grid,
+  .game-card-grid,
+  .about-me-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .about-stats,
+  .skills-grid,
+  .screens-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-card {
+    padding: 36px 24px;
+  }
+
+  .about-photo-wrap {
+    max-width: 300px;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+    padding: 36px 24px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 620px) {
+  .nav-links {
+    display: none;
+  }
+
+  .hero-title {
+    font-size: clamp(54px, 16vw, 90px);
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .game-name {
+    font-size: 42px;
+  }
+
+  .game-card {
+    padding: 30px 20px;
+  }
+}
+
+
+
+</style>
 </head>
 <body>
-  <h1>FutureFireflies</h1>
-  <p>Official website coming soon.</p>
+
+
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Future<span>Fireflies</span></a>
+  <ul class="nav-links">
+    <li><a href="#company">Project</a></li>
+    <li><a href="thegame.html">Game</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid"></div>
+  <div class="hero-scanlines"></div>
+  <div class="hero-lines"></div>
+
+  <div class="hero-corner">
+    <span class="hero-corner-label">Status</span>
+    <span class="hero-corner-value">In Development</span>
+    <div class="corner-divider"></div>
+    <span class="hero-corner-label">Type</span>
+    <span class="hero-corner-value">Racing / Sim</span>
+    <div class="corner-divider"></div>
+    <span class="hero-corner-label">Developer</span>
+    <span class="hero-corner-value">Solo Dev</span>
+  </div>
+
+  <div class="hero-eyebrow">Hover Racing Game</div>
+  <h1 class="hero-title">
+    Future<br>
+    <span class="line2">Fireflies</span>
+  </h1>
+  <p class="hero-sub">Building a high-fidelity racing experience rooted in a passion for motion, precision, and the feeling of speed.</p>
+  <div class="hero-ctas">
+    <a href="#game" class="btn btn-primary">The Game</a>
+    <a href="#about" class="btn btn-ghost">About</a>
+  </div>
+</section>
+
+<!-- COMPANY -->
+<section class="about-company" id="company">
+  <div class="about-company-grid">
+    <div>
+      <div class="section-label reveal">About FutureFireflies</div>
+      <h2 class="section-title reveal">Built from<br>Scratch.</h2>
+      <div class="about-body reveal">
+        <p>FutureFireflies is a one-person independent hover racing game project. One developer — design, levels, 3D models, textures, code, game architecture, custom tools. Everything built from scratch, with full control over every decision.</p>
+        <p>FutureFireflies has been in development for over three years. It runs on a custom physics engine and custom tooling built specifically for this project — not off-the-shelf solutions, but systems designed from the ground up to get the hovercraft feel exactly right.</p>
+        <p>The obsession with racing physics comes from real experience — years of karting, understanding how a vehicle actually behaves at the limit. That knowledge is baked into every layer of the simulation.</p>
+      </div>
+    </div>
+    <div class="about-stats reveal">
+      <div class="stat-box">
+        <div class="stat-num">3<span>+</span></div>
+        <div class="stat-label">Current game is three+ years in development</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">01<span>.</span></div>
+        <div class="stat-label">Solo developer</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num"><span style="font-size:28px;line-height:1.2">Custom</span></div>
+        <div class="stat-label">Physics & Tools</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num"><span style="font-size:28px;line-height:1.2">Real</span></div>
+        <div class="stat-label">Karting and sports experience help to make the feel of the game</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section class="game-section" id="game">
+  <div class="game-bg-text">HOVER</div>
+  <div class="game-inner">
+    <div class="section-label reveal">Upcoming Title</div>
+    <div class="game-card reveal">
+      <div class="game-card-grid">
+        <div>
+          <div class="game-title-block">
+            <div class="game-status">
+              <div class="status-dot"></div>
+              In Active Development
+            </div>
+            <div class="game-name">FutureFireflies
+              <br>
+              <span class="line2">Hover Racing Game</span></div>
+            <div class="game-tagline">Futuristic Hovercraft Racing — Near Future</div>
+          </div>
+
+          <p class="game-desc">
+            A simulation-grade racing title set in the near future, where futuristic hovercraft prototypes compete across vast open landscapes — sweeping mountain passes, coastal cliffs, and stone valleys carved by wind.<br><br>
+            Time trial and drift disciplines. Realistic vehicle handling. Environments that feel alive.
+          </p>
+
+
+          <div style="margin-top:30px;">
+            <a href="thegame.html" class="btn btn-primary">
+              View Game Details
+            </a>
+          </div>          
+          
+          <div>  
+            <br>
+          </div>
+
+          <div class="game-tags">
+            <span class="tag">Racing Sim</span>
+            <span class="tag">Hovercraft</span>
+            <span class="tag">Time Trial</span>
+            <span class="tag">Drift</span>
+            <span class="tag">Varied Tracks</span>
+            <span class="tag">Near Future</span>
+            <span class="tag">Unreal Engine</span>
+          </div>
+        </div>
+
+        <div class="game-specs">
+          <div class="spec-row">
+            <span class="spec-key">Vehicle Type</span>
+            <span class="spec-val">Futuristic Hovercraft</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Setting</span>
+            <span class="spec-val">Near Future</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Environments</span>
+            <span class="spec-val">Urban & Natural Environments</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Game Modes</span>
+            <span class="spec-val">Time Trial · Drift · And More</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Approach</span>
+            <span class="spec-val">Simulation-First</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Engine</span>
+            <span class="spec-val">Unreal Engine</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Platform</span>
+            <span class="spec-val">Steam</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDIA PLACEHOLDER 
+
+      -->
+
+      <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:40px;">
+        <div style="font-family:var(--font-display);font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">
+          Screenshots & Media
+        </div>
+
+        <!-- <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;"> -->
+        <div class="screens-grid">
+
+          <div class="screen-card">
+            <img src="images/screen1.jpg">
+          </div>
+
+          <div class="screen-card">
+            <video autoplay muted loop playsinline>
+              <source src="images/preview.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <div class="screen-card">
+            <img src="images/screen2.jpg">
+          </div>
+
+
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT ME -->
+<section class="about-me" id="about">
+  <div class="section-label reveal">The Developer</div>
+  <h2 class="section-title reveal">Igor<br>Kamennoy</h2>
+
+  <div class="about-me-grid reveal">
+    <div class="about-photo-wrap">
+      <div class="about-photo-frame">
+        <img src="images/igor.jpg" alt="Igor Kamennoy">
+      </div>
+      <div class="photo-border"></div>
+    </div>
+
+    <div>
+      <div class="about-role">Founder & Developer</div>
+      <div class="about-bio">
+      <p>I am the sole developer behind FutureFireflies. I bring over 18 years of professional experience in the games industry, working as a 2D and 3D artist and animator for major game companies worldwide, with a strong focus on animation and performance optimization.</p>
+      <p>My background covers the full art and animation pipeline — including character and FX animation, 3D modeling, rigging, and game-ready asset production. Earlier in my career, I worked as a 3D artist on racing and action titles, which directly informs this project.</p>
+      <p>FutureFireflies is the natural next step — taking that accumulated experience and applying it to an original hover racing game, built from the ground up as a solo developer.</p>      </div>
+
+      <div class="skills-grid">
+        <div class="skill-item">
+          <div class="skill-name">2D Animation</div>
+          <div class="skill-tools">Character · FX · UI</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-name">3D Art</div>
+          <div class="skill-tools">Modeling · Rigging · Animation</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-name">Game Dev</div>
+          <div class="skill-tools">Design · Pipeline · C++ code · Blueprints</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-name">Art Direction</div>
+          <div class="skill-tools">Concept · Visual Dev</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-name">Racing</div>
+          <div class="skill-tools">Sim · Physics · Feel</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-name">Solo Dev</div>
+          <div class="skill-tools">End-to-End Production</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="section-label">Contact</div>
+
+  <h2 class="section-title" style="margin-bottom:10px;">
+    Get in touch
+  </h2>
+
+  <p style="color:#888;font-size:16px;font-weight:300;letter-spacing:0.05em;margin-bottom:10px;">
+    Press inquiries, partnerships, collaboration.
+  </p>
+
+  <a href="mailto:contact@futurefireflies.com" class="contact-email">
+    contact@futurefireflies.com
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Future<span>Fireflies</span></div>
+
+  <div class="footer-copy">
+    © 2026 FutureFireflies. All rights reserved.
+  </div>
+
+  <div class="footer-links">
+    <a href="#company">Project</a>
+    <a href="#game">Game</a>
+    <a href="#about">About</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+
+
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Nav active state
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 200) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--accent)' : '';
+    });
+  });
+</script>
+
 </body>
 </html>
